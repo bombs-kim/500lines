@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "modeller-migrated"
+version = "0.1.0"
+description = ""
+authors = ["Beomsoo Kim <beoms424@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ipython = "^8.25.0"
+pdbpp = "^0.10.3"
+pre-commit = "^3.7.1"
+isort = "^5.13.2"
+numpy = "^1.26.4"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+mypy = "^1.10.0"
+pre-commit = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
