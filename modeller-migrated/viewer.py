@@ -59,7 +59,7 @@ from node import Sphere, Cube, SnowFigure
 from scene import Scene
 
 
-class Viewer(object):
+class Viewer:
     def __init__(self):
         """Initialize the viewer."""
         self.init_interface()

@@ -17,7 +17,7 @@ from transformation import scaling, translation
 import color
 
 
-class Node(object):
+class Node:
     """Base class for scene elements"""
 
     def __init__(self):

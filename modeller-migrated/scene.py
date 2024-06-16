@@ -3,8 +3,7 @@ import numpy
 from node import Sphere, Cube, SnowFigure
 
 
-class Scene(object):
-
+class Scene:
     # the default depth from the camera to place an object at
     PLACE_DEPTH = 15.0
 
@@ -34,7 +33,7 @@ class Scene(object):
             self.selected_node = None
 
         # Keep track of the closest hit.
-        mindist = sys.maxint
+        mindist = sys.maxsize
         closest_node = None
         for node in self.node_list:
             hit, distance = node.pick(start, direction, mat)

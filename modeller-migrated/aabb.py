@@ -17,7 +17,7 @@ import math
 EPSILON = 0.000001
 
 
-class AABB(object):
+class AABB:
 
     def __init__(self, center, size):
         """Axis aligned bounding box.

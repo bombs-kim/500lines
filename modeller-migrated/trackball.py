@@ -176,7 +176,7 @@ def _q_rotmatrix(q):
     return m
 
 
-class Trackball(object):
+class Trackball:
     """Virtual trackball for 3D scene viewing."""
 
     def __init__(self, theta=0, phi=0, zoom=1, distance=3):
