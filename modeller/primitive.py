@@ -14,8 +14,9 @@ from OpenGL.GL import (
 from OpenGL.GLU import gluDeleteQuadric, gluNewQuadric, gluSphere
 
 G_OBJ_PLANE = 1
-G_OBJ_SPHERE = 2
-G_OBJ_CUBE = 3
+G_OBJ_BOARD = 2
+G_OBJ_SPHERE = 3
+G_OBJ_CUBE = 4
 
 
 def make_plane():
@@ -79,6 +80,21 @@ def make_plane():
     glEndList()
 
 
+def make_board():
+    glNewList(G_OBJ_BOARD, GL_COMPILE)
+
+    glBegin(GL_LINES)
+    glColor3f(0, 0, 0)
+    for i in range(41):
+        glVertex3f(-10.0 + 0.5 * i, 0, -10)
+        glVertex3f(-10.0 + 0.5 * i, 0, 10)
+        glVertex3f(-10.0, 0, -10 + 0.5 * i)
+        glVertex3f(10.0, 0, -10 + 0.5 * i)
+    glEnd()
+
+    glEndList()
+
+
 def make_sphere():
     glNewList(G_OBJ_SPHERE, GL_COMPILE)
     quad = gluNewQuadric()
@@ -117,5 +133,6 @@ def make_cube():
 
 def init_primitives():
     make_plane()
+    make_board()
     make_sphere()
     make_cube()
