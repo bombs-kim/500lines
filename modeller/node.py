@@ -1,20 +1,21 @@
 import random
+
+import numpy
 from OpenGL.GL import (
+    GL_EMISSION,
+    GL_FRONT,
     glCallList,
     glColor3f,
     glMaterialfv,
     glMultMatrixf,
     glPopMatrix,
     glPushMatrix,
-    GL_EMISSION,
-    GL_FRONT,
 )
-import numpy
 
-from primitive import G_OBJ_CUBE, G_OBJ_SPHERE
-from aabb import AABB
-from transformation import scaling, translation
 import color
+from aabb import AABB
+from primitive import G_OBJ_CUBE, G_OBJ_SPHERE, G_OBJ_BOARD
+from transformation import scaling, translation
 
 
 class Node:
@@ -60,8 +61,10 @@ class Node:
         if self.color_index < color.MIN_COLOR:
             self.color_index = color.MAX_COLOR
 
-    def scale(self, up):
+    def scale(self, up, custom=None):
         s = 1.1 if up else 0.9
+        if custom is not None:
+            s = custom
         self.scaling_matrix = numpy.dot(self.scaling_matrix, scaling([s, s, s]))
 
     def pick(self, start, direction, mat):
@@ -87,7 +90,7 @@ class Node:
 
 class Primitive(Node):
     def __init__(self):
-        super(Primitive, self).__init__()
+        super().__init__()
         self.call_list = None
 
     def render_self(self):
@@ -95,24 +98,22 @@ class Primitive(Node):
 
 
 class Sphere(Primitive):
-    """Sphere primitive"""
-
-    def __init__(self):
-        super(Sphere, self).__init__()
+    def __init__(self, custom_scale=None):
+        super().__init__()
         self.call_list = G_OBJ_SPHERE
+        if custom_scale is not None:
+            self.scale(True, custom_scale)
 
 
 class Cube(Primitive):
-    """Cube primitive"""
-
     def __init__(self):
-        super(Cube, self).__init__()
+        super().__init__()
         self.call_list = G_OBJ_CUBE
 
 
 class HierarchicalNode(Node):
     def __init__(self):
-        super(HierarchicalNode, self).__init__()
+        super().__init__()
         self.child_nodes = []
 
     def render_self(self):
@@ -122,7 +123,7 @@ class HierarchicalNode(Node):
 
 class SnowFigure(HierarchicalNode):
     def __init__(self):
-        super(SnowFigure, self).__init__()
+        super().__init__()
         self.child_nodes = [Sphere(), Sphere(), Sphere()]
         self.child_nodes[0].translate(0, -0.6, 0)
         self.child_nodes[1].translate(0, 0.1, 0)
@@ -136,3 +137,11 @@ class SnowFigure(HierarchicalNode):
         for child_node in self.child_nodes:
             child_node.color_index = color.MIN_COLOR
         self.aabb = AABB([0.0, 0.0, 0.0], [0.5, 1.1, 0.5])
+
+
+class Board(Primitive):
+    def __init__(self, custom_scale=None):
+        super().__init__()
+        self.call_list = G_OBJ_BOARD
+        if custom_scale is not None:
+            self.scale(True, 0.5)
