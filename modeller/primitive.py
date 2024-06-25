@@ -83,14 +83,28 @@ def make_plane():
 def make_board():
     glNewList(G_OBJ_BOARD, GL_COMPILE)
 
-    glBegin(GL_LINES)
-    glColor3f(0, 0, 0)
-    for i in range(41):
-        glVertex3f(-10.0 + 0.5 * i, 0, -10)
-        glVertex3f(-10.0 + 0.5 * i, 0, 10)
-        glVertex3f(-10.0, 0, -10 + 0.5 * i)
-        glVertex3f(10.0, 0, -10 + 0.5 * i)
-    glEnd()
+    cell_size = 0.5
+    board_size = 20
+    offset = -(cell_size * board_size / 2)
+
+    magenta = (1.0, 0.0, 1.0)  # Magenta color
+    cyan = (0.0, 1.0, 1.0)  # Cyan color
+
+    for i in range(board_size):
+        for j in range(board_size):
+            # Alternate colors
+            if (i + j) % 2 == 0:
+                glColor3f(*magenta)
+            else:
+                glColor3f(*cyan)
+
+            # Draw the filled quad for each cell
+            glBegin(GL_QUADS)
+            glVertex3f(offset + cell_size * (i + 0), 0, offset + cell_size * (j + 1))
+            glVertex3f(offset + cell_size * (i + 1), 0, offset + cell_size * (j + 1))
+            glVertex3f(offset + cell_size * (i + 1), 0, offset + cell_size * (j + 0))
+            glVertex3f(offset + cell_size * (i + 0), 0, offset + cell_size * (j + 0))
+            glEnd()
 
     glEndList()
 
