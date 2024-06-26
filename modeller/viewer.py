@@ -1,7 +1,28 @@
 import math
 from typing import Literal
 
+import numpy
+from interaction import Interaction
+from node import Board
+from numpy.linalg import inv, norm
+from OpenGL.constants import GLfloat_3, GLfloat_4
 from OpenGL.GL import (
+    GL_AMBIENT_AND_DIFFUSE,
+    GL_BACK,
+    GL_COLOR_BUFFER_BIT,
+    GL_COLOR_MATERIAL,
+    GL_CULL_FACE,
+    GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_TEST,
+    GL_FRONT_AND_BACK,
+    GL_LESS,
+    GL_LIGHT0,
+    GL_LIGHTING,
+    GL_MODELVIEW,
+    GL_MODELVIEW_MATRIX,
+    GL_POSITION,
+    GL_PROJECTION,
+    GL_SPOT_DIRECTION,
     glCallList,
     glClear,
     glClearColor,
@@ -20,26 +41,13 @@ from OpenGL.GL import (
     glPushMatrix,
     glTranslated,
     glViewport,
-    GL_AMBIENT_AND_DIFFUSE,
-    GL_BACK,
-    GL_CULL_FACE,
-    GL_COLOR_BUFFER_BIT,
-    GL_COLOR_MATERIAL,
-    GL_DEPTH_BUFFER_BIT,
-    GL_DEPTH_TEST,
-    GL_FRONT_AND_BACK,
-    GL_LESS,
-    GL_LIGHT0,
-    GL_LIGHTING,
-    GL_MODELVIEW,
-    GL_MODELVIEW_MATRIX,
-    GL_POSITION,
-    GL_PROJECTION,
-    GL_SPOT_DIRECTION,
 )
-from OpenGL.constants import GLfloat_3, GLfloat_4
 from OpenGL.GLU import gluPerspective, gluUnProject
 from OpenGL.GLUT import (
+    GLUT_RGB,
+    GLUT_SINGLE,
+    GLUT_WINDOW_HEIGHT,
+    GLUT_WINDOW_WIDTH,
     glutCreateWindow,
     glutDisplayFunc,
     glutGet,
@@ -47,18 +55,10 @@ from OpenGL.GLUT import (
     glutInitDisplayMode,
     glutInitWindowSize,
     glutMainLoop,
-    GLUT_SINGLE,
-    GLUT_RGB,
-    GLUT_WINDOW_HEIGHT,
-    GLUT_WINDOW_WIDTH,
+    glutPostRedisplay,
+    glutTimerFunc,
 )
-
-import numpy
-from numpy.linalg import norm, inv
-
-from interaction import Interaction
-from primitive import init_primitives, G_OBJ_PLANE
-from node import Board
+from primitive import G_OBJ_PLANE, init_primitives
 from scene import Scene
 
 
@@ -70,6 +70,9 @@ class Viewer:
         self.init_scene()
         self.init_interaction()
         init_primitives()
+
+        self.target_translation = None
+        self.animation_step = 0.1  # control the speed of the animation
 
     def init_interface(self):
         """initialize the window and register the render function"""
@@ -197,8 +200,39 @@ class Viewer:
         start, direction = self.get_ray(x, y)
         self.scene.move_selected(start, direction, self.inverseModelView)
 
+    def move_board_step(self):
+        """Incrementally move the board to the target position."""
+        if self.target_translation is None:
+            return
+
+        delta = self.target_translation - self.current_translation
+
+        # Check if the translation is close enough to the target to stop the animation
+        if abs(delta) <= self.animation_step:
+            self.board.translate(0, 0, delta)
+            self.target_translation = None
+            self.current_translation = None
+            print("Animation complete")
+        else:
+            # Move a small step towards the target
+            step = self.animation_step if delta > 0 else -self.animation_step
+            self.board.translate(0, 0, step)
+            self.current_translation += step
+
+        # Request a redraw
+        glutPostRedisplay()
+
+        # Continue the animation
+        if self.target_translation is not None:
+            glutTimerFunc(16, lambda x: self.move_board_step(), 0)
+
     def move_board(self, z: Literal[-1, 1]):
-        self.board.translate(0, 0, z)
+        if self.target_translation is None:
+            self.target_translation = z
+            self.current_translation = 0.0
+            self.move_board_step()
+        else:
+            self.target_translation += z
 
     def rotate_board(self, direction: Literal["left", "right"]):
         angle = 1 / 2 * math.pi if direction == "right" else -(1 / 2 * math.pi)
