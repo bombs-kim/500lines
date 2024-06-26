@@ -1,3 +1,4 @@
+import math
 from typing import Literal
 
 from OpenGL.GL import (
@@ -113,6 +114,7 @@ class Viewer:
         self.interaction.register_callback("move", self.move)
         self.interaction.register_callback("place", self.place)
         self.interaction.register_callback("move_board", self.move_board)
+        self.interaction.register_callback("rotate_board", self.rotate_board)
 
     def main_loop(self):
         glutMainLoop()
@@ -195,8 +197,12 @@ class Viewer:
         start, direction = self.get_ray(x, y)
         self.scene.move_selected(start, direction, self.inverseModelView)
 
-    def move_board(self, x: Literal[-1, 0, 1], z: Literal[-1, 0, 1]):
-        self.board.translate(x, 0, z)
+    def move_board(self, z: Literal[-1, 1]):
+        self.board.translate(0, 0, z)
+
+    def rotate_board(self, direction: Literal["left", "right"]):
+        angle = 1 / 2 * math.pi if direction == "right" else -(1 / 2 * math.pi)
+        self.board.rotate_y(angle)
 
     def rotate_color(self, forward):
         """Rotate the color of the selected Node. Boolean 'forward' indicates direction of rotation."""

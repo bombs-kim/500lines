@@ -15,7 +15,7 @@ from OpenGL.GL import (
 import color
 from aabb import AABB
 from primitive import G_OBJ_CUBE, G_OBJ_SPHERE, G_OBJ_BOARD
-from transformation import scaling, translation
+from transformation import scaling, translation, rotation_y
 
 
 class Node:
@@ -53,6 +53,9 @@ class Node:
         self.translation_matrix = numpy.dot(
             self.translation_matrix, translation([x, y, z])
         )
+
+    def rotate_y(self, angle):
+        self.translation_matrix = numpy.dot(self.translation_matrix, rotation_y(angle))
 
     def rotate_color(self, forwards):
         self.color_index += 1 if forwards else -1

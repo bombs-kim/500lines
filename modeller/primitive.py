@@ -87,8 +87,8 @@ def make_board():
     board_size = 20
     offset = -(cell_size * board_size / 2)
 
-    magenta = (1.0, 0.0, 1.0)  # Magenta color
-    cyan = (0.0, 1.0, 1.0)  # Cyan color
+    magenta = (1.0, 0.0, 1.0)
+    cyan = (0.0, 1.0, 1.0)
 
     for i in range(board_size):
         for j in range(board_size):

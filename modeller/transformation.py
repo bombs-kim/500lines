@@ -16,3 +16,12 @@ def scaling(scale):
     s[2, 2] = scale[2]
     s[3, 3] = 1
     return s
+
+
+def rotation_y(angle):
+    r = numpy.identity(4)
+    r[0, 0] = numpy.cos(angle)
+    r[0, 2] = numpy.sin(angle)
+    r[2, 0] = -numpy.sin(angle)
+    r[2, 2] = numpy.cos(angle)
+    return r
