@@ -1,4 +1,5 @@
 import random
+from typing import Literal
 
 import numpy
 from OpenGL.GL import (
@@ -55,7 +56,7 @@ class Node:
         )
 
     def rotate_y(self, angle):
-        self.translation_matrix = numpy.dot(self.translation_matrix, rotation_y(angle))
+        self.translation_matrix = numpy.dot(rotation_y(angle), self.translation_matrix)
 
     def rotate_color(self, forwards):
         self.color_index += 1 if forwards else -1
@@ -146,5 +147,23 @@ class Board(Primitive):
     def __init__(self, custom_scale=None):
         super().__init__()
         self.call_list = G_OBJ_BOARD
+        self.dir_idx = 0
         if custom_scale is not None:
             self.scale(True, 0.5)
+
+    def turn_forward_direction(self, to: Literal["left", "right"]):
+        if to == "left":
+            self.dir_idx = (self.dir_idx + 1) % 4
+        else:
+            self.dir_idx = (self.dir_idx - 1) % 4
+
+    def get_forward_direction(self):
+        return {
+            0: numpy.array([0.0, 0.0, 1.0]),
+            1: numpy.array([1.0, 0.0, 0.0]),
+            2: numpy.array([0.0, 0.0, -1.0]),
+            3: numpy.array([-1.0, 0.0, 0.0]),
+        }[self.dir_idx]
+
+    def get_backward_direction(self):
+        return self.get_forward_direction() * (-1)

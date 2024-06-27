@@ -109,9 +109,9 @@ class Interaction:
         elif key == b"]":
             self.translate(0, 0, -1.0)
         elif key == GLUT_KEY_UP:
-            self.trigger("move_board", z=+1)
+            self.trigger("move_board", direction="forward")
         elif key == GLUT_KEY_DOWN:
-            self.trigger("move_board", z=-1)
+            self.trigger("move_board", direction="backward")
         elif key == GLUT_KEY_LEFT:
             self.trigger("rotate_board", direction="left")
         elif key == GLUT_KEY_RIGHT:

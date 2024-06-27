@@ -210,13 +210,13 @@ class Viewer:
         step = self.target_translation * self.animation_step_ratio
 
         # Check if the translation is close enough to the target to stop the animation
-        if abs(delta) <= abs(step):
-            self.board.translate(0, 0, delta)
+        if sum(abs(delta)) <= sum(abs(step)):
+            self.board.translate(*delta)
             self.target_translation = None
             self.current_translation = None
         else:
             # Move a small step towards the target
-            self.board.translate(0, 0, step)
+            self.board.translate(*step)
             self.current_translation += step
 
         # Request a redraw
@@ -226,13 +226,16 @@ class Viewer:
         if self.target_translation is not None:
             glutTimerFunc(16, lambda x: self.move_board_step(), 0)
 
-    def move_board(self, z: Literal[-1, 1]):
+    def move_board(self, direction: Literal["forward", "backward"]):
+        direction = (
+            self.board.get_forward_direction()
+            if direction == "forward"
+            else -self.board.get_forward_direction()
+        )
         if self.target_translation is None:
-            self.target_translation = z
-            self.current_translation = 0.0
+            self.target_translation = direction
+            self.current_translation = numpy.array([0.0, 0.0, 0.0])
             self.move_board_step()
-        else:
-            self.target_translation += z
 
     def rotate_board_step(self):
         """Incrementally rotate the board to the target angle."""
@@ -263,11 +266,8 @@ class Viewer:
         if self.target_rotation is None:
             self.target_rotation = math.pi / 2 if direction == "right" else -math.pi / 2
             self.current_rotation = 0.0
+            self.board.turn_forward_direction(direction)
             self.rotate_board_step()
-        else:
-            self.target_rotation += (
-                math.pi / 2 if direction == "right" else -math.pi / 2
-            )
 
     def rotate_color(self, forward):
         """Rotate the color of the selected Node. Boolean 'forward' indicates direction of rotation."""
