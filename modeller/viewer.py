@@ -72,7 +72,8 @@ class Viewer:
         init_primitives()
 
         self.target_translation = None
-        self.animation_step = 0.1  # control the speed of the animation
+        self.target_rotation = None
+        self.animation_step_ratio = 0.05
 
     def init_interface(self):
         """initialize the window and register the render function"""
@@ -206,16 +207,15 @@ class Viewer:
             return
 
         delta = self.target_translation - self.current_translation
+        step = self.target_translation * self.animation_step_ratio
 
         # Check if the translation is close enough to the target to stop the animation
-        if abs(delta) <= self.animation_step:
+        if abs(delta) <= abs(step):
             self.board.translate(0, 0, delta)
             self.target_translation = None
             self.current_translation = None
-            print("Animation complete")
         else:
             # Move a small step towards the target
-            step = self.animation_step if delta > 0 else -self.animation_step
             self.board.translate(0, 0, step)
             self.current_translation += step
 
@@ -234,9 +234,40 @@ class Viewer:
         else:
             self.target_translation += z
 
+    def rotate_board_step(self):
+        """Incrementally rotate the board to the target angle."""
+        if self.target_rotation is None:
+            return
+
+        delta = self.target_rotation - self.current_rotation
+        step = self.target_rotation * self.animation_step_ratio
+
+        # Check if the rotation is close enough to the target to stop the animation
+        if abs(delta) <= abs(step):
+            self.board.rotate_y(delta)
+            self.target_rotation = None
+            self.current_rotation = None
+        else:
+            # Rotate a small step towards the target
+            self.board.rotate_y(step)
+            self.current_rotation += step
+
+        # Request a redraw
+        glutPostRedisplay()
+
+        # Continue the animation
+        if self.target_rotation is not None:
+            glutTimerFunc(16, lambda x: self.rotate_board_step(), 0)
+
     def rotate_board(self, direction: Literal["left", "right"]):
-        angle = 1 / 2 * math.pi if direction == "right" else -(1 / 2 * math.pi)
-        self.board.rotate_y(angle)
+        if self.target_rotation is None:
+            self.target_rotation = math.pi / 2 if direction == "right" else -math.pi / 2
+            self.current_rotation = 0.0
+            self.rotate_board_step()
+        else:
+            self.target_rotation += (
+                math.pi / 2 if direction == "right" else -math.pi / 2
+            )
 
     def rotate_color(self, forward):
         """Rotate the color of the selected Node. Boolean 'forward' indicates direction of rotation."""
