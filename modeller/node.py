@@ -15,7 +15,7 @@ from OpenGL.GL import (
 
 import color
 from aabb import AABB
-from primitive import G_OBJ_CUBE, G_OBJ_SPHERE, G_OBJ_BOARD
+from primitive import G_OBJ_CUBE, G_OBJ_SPHERE, make_quad
 from transformation import scaling, translation, rotation_y
 
 
@@ -143,13 +143,40 @@ class SnowFigure(HierarchicalNode):
         self.aabb = AABB([0.0, 0.0, 0.0], [0.5, 1.1, 0.5])
 
 
-class Board(Primitive):
-    def __init__(self, custom_scale=None):
+class BoardCell(Node):
+    def __init__(self, color: Literal["magenta", "cyan"], x_start, z_start, size):
         super().__init__()
-        self.call_list = G_OBJ_BOARD
+        self.color = (1.0, 0.0, 1.0) if color == "magenta" else (0.0, 1.0, 1.0)
+        self.x_start = x_start
+        self.z_start = z_start
+        self.size = size
+
+    def render_self(self):
+        glColor3f(*self.color)
+        x = self.x_start
+        z = self.z_start
+        size = self.size
+        make_quad(
+            (x + 0 * size, 0, z + 1 * size),
+            (x + 1 * size, 0, z + 1 * size),
+            (x + 1 * size, 0, z + 0 * size),
+            (x + 0 * size, 0, z + 0 * size),
+        )
+
+
+class Board(HierarchicalNode):
+    def __init__(self, board_size: tuple[int, int] = (20, 20), cell_size: float = 0.5):
+        super().__init__()
         self.dir_idx = 0
-        if custom_scale is not None:
-            self.scale(True, 0.5)
+        self.board_size = board_size
+
+        for i in range(board_size[0]):
+            for j in range(board_size[1]):
+                color = "magenta" if (i + j) % 2 == 0 else "cyan"
+                x_start = (-(cell_size * board_size[0]) / 2) + i * cell_size
+                z_start = (-(cell_size * board_size[1]) / 2) + j * cell_size
+                cell = BoardCell(color, x_start, z_start, cell_size)
+                self.child_nodes.append(cell)
 
     def turn_forward_direction(self, to: Literal["left", "right"]):
         if to == "left":

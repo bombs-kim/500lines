@@ -14,12 +14,11 @@ from OpenGL.GL import (
 from OpenGL.GLU import gluDeleteQuadric, gluNewQuadric, gluSphere
 
 G_OBJ_PLANE = 1
-G_OBJ_BOARD = 2
-G_OBJ_SPHERE = 3
-G_OBJ_CUBE = 4
+G_OBJ_SPHERE = 2
+G_OBJ_CUBE = 3
 
 
-def make_plane():
+def compile_plane():
     glNewList(G_OBJ_PLANE, GL_COMPILE)
     glBegin(GL_LINES)
     glColor3f(0, 0, 0)
@@ -80,36 +79,7 @@ def make_plane():
     glEndList()
 
 
-def make_board():
-    glNewList(G_OBJ_BOARD, GL_COMPILE)
-
-    cell_size = 0.5
-    board_size = 20
-    offset = -(cell_size * board_size / 2)
-
-    magenta = (1.0, 0.0, 1.0)
-    cyan = (0.0, 1.0, 1.0)
-
-    for i in range(board_size):
-        for j in range(board_size):
-            # Alternate colors
-            if (i + j) % 2 == 0:
-                glColor3f(*magenta)
-            else:
-                glColor3f(*cyan)
-
-            # Draw the filled quad for each cell
-            glBegin(GL_QUADS)
-            glVertex3f(offset + cell_size * (i + 0), 0, offset + cell_size * (j + 1))
-            glVertex3f(offset + cell_size * (i + 1), 0, offset + cell_size * (j + 1))
-            glVertex3f(offset + cell_size * (i + 1), 0, offset + cell_size * (j + 0))
-            glVertex3f(offset + cell_size * (i + 0), 0, offset + cell_size * (j + 0))
-            glEnd()
-
-    glEndList()
-
-
-def make_sphere():
+def compile_sphere():
     glNewList(G_OBJ_SPHERE, GL_COMPILE)
     quad = gluNewQuadric()
     gluSphere(quad, 0.5, 30, 30)
@@ -117,7 +87,7 @@ def make_sphere():
     glEndList()
 
 
-def make_cube():
+def compile_cube():
     glNewList(G_OBJ_CUBE, GL_COMPILE)
     vertices = [
         ((-0.5, -0.5, -0.5), (-0.5, -0.5, 0.5), (-0.5, 0.5, 0.5), (-0.5, 0.5, -0.5)),
@@ -145,8 +115,16 @@ def make_cube():
     glEndList()
 
 
-def init_primitives():
-    make_plane()
-    make_board()
-    make_sphere()
-    make_cube()
+def make_quad(point1, point2, point3, point4):
+    glBegin(GL_QUADS)
+    glVertex3f(*point1)
+    glVertex3f(*point2)
+    glVertex3f(*point3)
+    glVertex3f(*point4)
+    glEnd()
+
+
+def compile_primitives():
+    compile_plane()
+    compile_sphere()
+    compile_cube()

@@ -58,7 +58,7 @@ from OpenGL.GLUT import (
     glutPostRedisplay,
     glutTimerFunc,
 )
-from primitive import G_OBJ_PLANE, init_primitives
+from primitive import G_OBJ_PLANE, compile_primitives
 from scene import Scene
 
 
@@ -69,7 +69,7 @@ class Viewer:
         self.init_opengl()
         self.init_scene()
         self.init_interaction()
-        init_primitives()
+        compile_primitives()
 
         self.target_translation = None
         self.target_rotation = None
