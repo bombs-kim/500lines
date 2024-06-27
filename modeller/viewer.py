@@ -84,8 +84,8 @@ class Viewer:
 
     def init_opengl(self):
         """initialize the opengl settings to render the scene"""
-        self.inverseModelView = numpy.identity(4)
-        self.modelView = numpy.identity(4)
+        self.inverse_model_view = numpy.identity(4)
+        self.model_view = numpy.identity(4)
 
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -138,9 +138,9 @@ class Viewer:
         glMultMatrixf(self.interaction.trackball.matrix)
 
         # store the inverse of the current modelview.
-        currentModelView = numpy.array(glGetFloatv(GL_MODELVIEW_MATRIX))
-        self.modelView = numpy.transpose(currentModelView)
-        self.inverseModelView = inv(numpy.transpose(currentModelView))
+        current_model_view = numpy.array(glGetFloatv(GL_MODELVIEW_MATRIX))
+        self.model_view = numpy.transpose(current_model_view)
+        self.inverse_model_view = inv(numpy.transpose(current_model_view))
 
         # render the scene. This will call the render function for each object in the scene
         self.scene.render()
@@ -155,14 +155,14 @@ class Viewer:
 
     def init_view(self):
         """initialize the projection matrix"""
-        xSize, ySize = glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)
-        aspect_ratio = float(xSize) / float(ySize)
+        x_size, y_size = glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)
+        aspect_ratio = float(x_size) / float(y_size)
 
         # load the projection matrix. Always the same
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
-        glViewport(0, 0, xSize, ySize)
+        glViewport(0, 0, x_size, y_size)
         gluPerspective(70, aspect_ratio, 0.1, 1000.0)
         glTranslated(0, 0, -15)
 
@@ -188,17 +188,17 @@ class Viewer:
     def pick(self, x, y):
         """Execute pick of an object. Selects an object in the scene."""
         start, direction = self.get_ray(x, y)
-        self.scene.pick(start, direction, self.modelView)
+        self.scene.pick(start, direction, self.model_view)
 
     def place(self, shape, x, y):
         """Execute a placement of a new primitive into the scene."""
         start, direction = self.get_ray(x, y)
-        self.scene.place(shape, start, direction, self.inverseModelView)
+        self.scene.place(shape, start, direction, self.inverse_model_view)
 
     def move(self, x, y):
         """Execute a move command on the scene."""
         start, direction = self.get_ray(x, y)
-        self.scene.move_selected(start, direction, self.inverseModelView)
+        self.scene.move_selected(start, direction, self.inverse_model_view)
 
     def move_board_step(self):
         """Incrementally move the board to the target position."""
