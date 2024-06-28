@@ -144,39 +144,62 @@ class SnowFigure(HierarchicalNode):
 
 
 class BoardCell(Node):
-    def __init__(self, color: Literal["magenta", "cyan"], x_start, z_start, size):
+    def __init__(
+        self, board: "Board", color: Literal["magenta", "cyan"], x_start, z_start, size
+    ):
         super().__init__()
-        self.color = (1.0, 0.0, 1.0) if color == "magenta" else (0.0, 1.0, 1.0)
+        self.board = board
+        # self.color = (1.0, 0.0, 1.0) if color == "magenta" else (0.0, 1.0, 1.0)
+        self.color = (
+            (1.0, 0.0, random.random()) if color == "magenta" else (0.0, 1.0, 1.0)
+        )
         self.x_start = x_start
         self.z_start = z_start
         self.size = size
+
+    @property
+    def board_center(self):
+        self.board.center
 
     def render_self(self):
         glColor3f(*self.color)
         x = self.x_start
         z = self.z_start
         size = self.size
-        make_quad(
-            (x + 0 * size, 0, z + 1 * size),
-            (x + 1 * size, 0, z + 1 * size),
-            (x + 1 * size, 0, z + 0 * size),
-            (x + 0 * size, 0, z + 0 * size),
-        )
+
+        points = [
+            numpy.array((x + 0 * size, 0, z + 1 * size)),
+            numpy.array((x + 1 * size, 0, z + 1 * size)),
+            numpy.array((x + 1 * size, 0, z + 0 * size)),
+            numpy.array((x + 0 * size, 0, z + 0 * size)),
+        ]
+
+        # Adjust the y coordinate of the points to create a curved surface
+        for point in points:
+            dist_to_center = numpy.linalg.norm(point - self.board.center)
+            point[1] = -0.05 * (dist_to_center**2)
+
+        make_quad(*points)
 
 
 class Board(HierarchicalNode):
-    def __init__(self, board_size: tuple[int, int] = (20, 20), cell_size: float = 0.5):
+    def __init__(self, board_size: tuple[int, int] = (30, 30), cell_size: float = 0.5):
         super().__init__()
         self.dir_idx = 0
         self.board_size = board_size
+        self.center = numpy.array([0.0, 0.0, 0.0])
 
         for i in range(board_size[0]):
             for j in range(board_size[1]):
                 color = "magenta" if (i + j) % 2 == 0 else "cyan"
                 x_start = (-(cell_size * board_size[0]) / 2) + i * cell_size
                 z_start = (-(cell_size * board_size[1]) / 2) + j * cell_size
-                cell = BoardCell(color, x_start, z_start, cell_size)
+                cell = BoardCell(self, color, x_start, z_start, cell_size)
                 self.child_nodes.append(cell)
+
+    def translate_and_adjust_center(self, translation_vec):
+        self.translate(*translation_vec)
+        self.center -= translation_vec
 
     def turn_forward_direction(self, to: Literal["left", "right"]):
         if to == "left":

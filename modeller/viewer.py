@@ -73,7 +73,7 @@ class Viewer:
 
         self.target_translation = None
         self.target_rotation = None
-        self.animation_step_ratio = 0.05
+        self.animation_step_ratio = 0.2
 
     def init_interface(self):
         """initialize the window and register the render function"""
@@ -211,12 +211,12 @@ class Viewer:
 
         # Check if the translation is close enough to the target to stop the animation
         if sum(abs(delta)) <= sum(abs(step)):
-            self.board.translate(*delta)
+            self.board.translate_and_adjust_center(delta)
             self.target_translation = None
             self.current_translation = None
         else:
             # Move a small step towards the target
-            self.board.translate(*step)
+            self.board.translate_and_adjust_center(step)
             self.current_translation += step
 
         # Request a redraw
@@ -227,13 +227,13 @@ class Viewer:
             glutTimerFunc(16, lambda x: self.move_board_step(), 0)
 
     def move_board(self, direction: Literal["forward", "backward"]):
-        direction = (
+        translation_vec = (
             self.board.get_forward_direction()
             if direction == "forward"
             else -self.board.get_forward_direction()
         )
         if self.target_translation is None:
-            self.target_translation = direction
+            self.target_translation = translation_vec
             self.current_translation = numpy.array([0.0, 0.0, 0.0])
             self.move_board_step()
 
