@@ -62,6 +62,9 @@ from primitive import G_OBJ_PLANE, compile_primitives
 from scene import Scene
 
 
+ANIMATION_DELAY = 10
+
+
 class Viewer:
     def __init__(self):
         """Initialize the viewer."""
@@ -73,7 +76,7 @@ class Viewer:
 
         self.target_translation = None
         self.target_rotation = None
-        self.animation_step_ratio = 0.2
+        self.animation_step_ratio = 0.05
 
     def init_interface(self):
         """initialize the window and register the render function"""
@@ -224,7 +227,7 @@ class Viewer:
 
         # Continue the animation
         if self.target_translation is not None:
-            glutTimerFunc(16, lambda x: self.move_board_step(), 0)
+            glutTimerFunc(ANIMATION_DELAY, lambda x: self.move_board_step(), 0)
 
     def move_board(self, direction: Literal["forward", "backward"]):
         translation_vec = (
@@ -260,7 +263,7 @@ class Viewer:
 
         # Continue the animation
         if self.target_rotation is not None:
-            glutTimerFunc(16, lambda x: self.rotate_board_step(), 0)
+            glutTimerFunc(ANIMATION_DELAY, lambda x: self.rotate_board_step(), 0)
 
     def rotate_board(self, direction: Literal["left", "right"]):
         if self.target_rotation is None:

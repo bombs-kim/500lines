@@ -149,41 +149,45 @@ class BoardCell(Node):
     ):
         super().__init__()
         self.board = board
-        # self.color = (1.0, 0.0, 1.0) if color == "magenta" else (0.0, 1.0, 1.0)
-        self.color = (
-            (1.0, 0.0, random.random()) if color == "magenta" else (0.0, 1.0, 1.0)
-        )
-        self.x_start = x_start
-        self.z_start = z_start
+        self.color = (1.0, 0.0, 1.0) if color == "magenta" else (0.0, 1.0, 1.0)
+        self.x_start = x = x_start
+        self.z_start = z = z_start
         self.size = size
+        self.points_base = numpy.array(
+            [
+                (x + 0 * size, 0.0, z + 1 * size),
+                (x + 1 * size, 0.0, z + 1 * size),
+                (x + 1 * size, 0.0, z + 0 * size),
+                (x + 0 * size, 0.0, z + 0 * size),
+            ]
+        )
+        # Center of mass when projected to the xz plane
+        self.center_of_mass = numpy.array([x + size / 2, 0.0, z + size / 2])
 
     @property
-    def board_center(self):
-        self.board.center
+    def distance_to_center(self):
+        """
+        Returns the distance from the center of the board to the center of this cell
+        when projected to the xz plane
+        """
+        return numpy.linalg.norm(self.center_of_mass - self.board.center)
 
     def render_self(self):
         glColor3f(*self.color)
-        x = self.x_start
-        z = self.z_start
-        size = self.size
 
-        points = [
-            numpy.array((x + 0 * size, 0, z + 1 * size)),
-            numpy.array((x + 1 * size, 0, z + 1 * size)),
-            numpy.array((x + 1 * size, 0, z + 0 * size)),
-            numpy.array((x + 0 * size, 0, z + 0 * size)),
-        ]
+        # copy the base points
+        points = numpy.array(self.points_base)
 
         # Adjust the y coordinate of the points to create a curved surface
         for point in points:
-            dist_to_center = numpy.linalg.norm(point - self.board.center)
-            point[1] = -0.05 * (dist_to_center**2)
+            point_dist_to_center = numpy.linalg.norm(point - self.board.center)
+            point[1] = -0.04 * (point_dist_to_center**2)
 
         make_quad(*points)
 
 
 class Board(HierarchicalNode):
-    def __init__(self, board_size: tuple[int, int] = (30, 30), cell_size: float = 0.5):
+    def __init__(self, board_size: tuple[int, int] = (50, 50), cell_size: float = 1.0):
         super().__init__()
         self.dir_idx = 0
         self.board_size = board_size
@@ -196,6 +200,12 @@ class Board(HierarchicalNode):
                 z_start = (-(cell_size * board_size[1]) / 2) + j * cell_size
                 cell = BoardCell(self, color, x_start, z_start, cell_size)
                 self.child_nodes.append(cell)
+
+    def render_self(self):
+        for child in self.child_nodes:
+            child: BoardCell
+            if child.distance_to_center < 10.0:
+                child.render()
 
     def translate_and_adjust_center(self, translation_vec):
         self.translate(*translation_vec)
