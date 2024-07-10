@@ -145,7 +145,13 @@ class SnowFigure(HierarchicalNode):
 
 class BoardCell(Node):
     def __init__(
-        self, board: "Board", color: Literal["magenta", "cyan"], x_start, z_start, size
+        self,
+        board: "Board",
+        color: Literal["magenta", "cyan"],
+        x_start,
+        z_start,
+        size,
+        sphere: Literal["unmarked", "marked"] | None = None,
     ):
         super().__init__()
         self.board = board
@@ -163,6 +169,7 @@ class BoardCell(Node):
         )
         # Center of mass when projected to the xz plane
         self.center_of_mass = numpy.array([x + size / 2, 0.0, z + size / 2])
+        self.sphere = sphere
 
     @property
     def distance_to_center(self):
@@ -171,6 +178,18 @@ class BoardCell(Node):
         when projected to the xz plane
         """
         return numpy.linalg.norm(self.center_of_mass - self.board.center)
+
+    def render_sphere(self, point):
+        sphere = Sphere(custom_scale=0.5)
+        if self.sphere == "unmarked":
+            color_index = color.MIN_COLOR
+        elif self.sphere == "marked":
+            color_index = color.MAX_COLOR
+        sphere.color_index = color_index
+        sphere_pos = numpy.array(point)
+        sphere_pos[1] += 0.15
+        sphere.translate(*sphere_pos)
+        sphere.render()
 
     def render_self(self):
         glColor3f(*self.color)
@@ -183,11 +202,19 @@ class BoardCell(Node):
             point_dist_to_center = numpy.linalg.norm(point - self.board.center)
             point[1] = -0.04 * (point_dist_to_center**2)
 
+        if point_dist_to_center <= 0.1 and self.sphere == "unmarked":
+            self.sphere = "marked"
+
         make_quad(*points)
+
+        if self.sphere is not None:
+            self.render_sphere(points[-1])
 
 
 class Board(HierarchicalNode):
-    def __init__(self, board_size: tuple[int, int] = (50, 50), cell_size: float = 1.0):
+    def __init__(
+        self, board_size: tuple[int, int] = (50, 50), cell_size: float = 1.0, map=None
+    ):
         super().__init__()
         self.dir_idx = 0
         self.board_size = board_size
@@ -198,7 +225,15 @@ class Board(HierarchicalNode):
                 color = "magenta" if (i + j) % 2 == 0 else "cyan"
                 x_start = (-(cell_size * board_size[0]) / 2) + i * cell_size
                 z_start = (-(cell_size * board_size[1]) / 2) + j * cell_size
-                cell = BoardCell(self, color, x_start, z_start, cell_size)
+
+                if map and i > 1 and j > 1 and map[j - 1][i - 1] != 0:
+                    sphere = "unmarked"
+                else:
+                    sphere = None
+
+                cell = BoardCell(
+                    self, color, x_start, z_start, cell_size, sphere=sphere
+                )
                 self.child_nodes.append(cell)
 
     def render_self(self):
@@ -227,3 +262,20 @@ class Board(HierarchicalNode):
 
     def get_backward_direction(self):
         return self.get_forward_direction() * (-1)
+
+    @classmethod
+    def from_map(cls):
+        from board_config import map
+
+        map = [[int(c) for c in line] for line in map.split("\n")]
+
+        width, height = len(map[0]), len(map)
+
+        assert width % 2 == 1 and height % 2 == 1
+
+        for line in map:
+            assert len(line) == width
+
+        # The map is for denoting spheres.
+        # The number of cells is width + 1 by height + 1.
+        return cls((width + 1, height + 1), map=map)
