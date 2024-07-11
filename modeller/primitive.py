@@ -1,4 +1,7 @@
 from OpenGL.GL import (
+    GL_COMPILE,
+    GL_LINES,
+    GL_QUADS,
     glBegin,
     glColor3f,
     glEnd,
@@ -7,15 +10,13 @@ from OpenGL.GL import (
     glNewList,
     glNormal3f,
     glVertex3f,
-    GL_COMPILE,
-    GL_LINES,
-    GL_QUADS,
 )
 from OpenGL.GLU import gluDeleteQuadric, gluNewQuadric, gluSphere
 
 G_OBJ_PLANE = 1
 G_OBJ_SPHERE = 2
 G_OBJ_CUBE = 3
+G_OBJ_DIRECTION = 4
 
 
 def compile_plane():
@@ -115,6 +116,25 @@ def compile_cube():
     glEndList()
 
 
+def compile_direction():
+    glNewList(G_OBJ_DIRECTION, GL_COMPILE)
+
+    glLineWidth(5)
+
+    glBegin(GL_LINES)
+    glColor3f(0.5, 0.7, 0.5)
+    glVertex3f(0.0, 0.5, 0.0)
+    glVertex3f(0.0, 0.5, -1.0)
+    glVertex3f(0.0, 0.5, -1.0)
+    glVertex3f(0.2, 0.5, -0.8)
+    glVertex3f(0.0, 0.5, -1.0)
+    glVertex3f(-0.2, 0.5, -0.8)
+    glEnd()
+
+    glLineWidth(1)
+    glEndList()
+
+
 def make_quad(point1, point2, point3, point4):
     glBegin(GL_QUADS)
     glVertex3f(*point1)
@@ -128,3 +148,4 @@ def compile_primitives():
     compile_plane()
     compile_sphere()
     compile_cube()
+    compile_direction()

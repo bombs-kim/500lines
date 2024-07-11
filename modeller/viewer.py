@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy
 from interaction import Interaction
-from node import Board
+from node import Board, SnowFigure
 from numpy.linalg import inv, norm
 from OpenGL.constants import GLfloat_3, GLfloat_4
 from OpenGL.GL import (
@@ -58,7 +58,7 @@ from OpenGL.GLUT import (
     glutPostRedisplay,
     glutTimerFunc,
 )
-from primitive import G_OBJ_PLANE, compile_primitives
+from primitive import G_OBJ_DIRECTION, compile_primitives
 from scene import Scene
 
 
@@ -110,9 +110,11 @@ class Viewer:
         self.create_sample_scene()
 
     def create_sample_scene(self):
-        board = Board()
+        board = Board.from_map()
         self.board = board
         self.scene.add_node(board)
+        snow_figure = SnowFigure()
+        self.scene.add_node(snow_figure)
 
     def init_interaction(self):
         """init user interaction and callbacks"""
@@ -151,7 +153,8 @@ class Viewer:
 
         # draw the grid
         glDisable(GL_LIGHTING)
-        glCallList(G_OBJ_PLANE)
+        # glCallList(G_OBJ_PLANE)
+        glCallList(G_OBJ_DIRECTION)
         glPopMatrix()
 
         # flush the buffers so that the scene can be drawn

@@ -139,7 +139,7 @@ class SnowFigure(HierarchicalNode):
             self.scaling_matrix, scaling([0.7, 0.7, 0.7])
         )
         for child_node in self.child_nodes:
-            child_node.color_index = color.MIN_COLOR
+            child_node.color_index = 10
         self.aabb = AABB([0.0, 0.0, 0.0], [0.5, 1.1, 0.5])
 
 
@@ -184,7 +184,7 @@ class BoardCell(Node):
         if self.sphere == "unmarked":
             color_index = color.MIN_COLOR
         elif self.sphere == "marked":
-            color_index = color.MAX_COLOR
+            color_index = 8
         sphere.color_index = color_index
         sphere_pos = numpy.array(point)
         sphere_pos[1] += 0.15
@@ -205,7 +205,11 @@ class BoardCell(Node):
         if point_dist_to_center <= 0.1 and self.sphere == "unmarked":
             self.sphere = "marked"
 
+        from OpenGL.GL import glEnable, GL_LIGHTING, glDisable
+
+        glDisable(GL_LIGHTING)
         make_quad(*points)
+        glEnable(GL_LIGHTING)
 
         if self.sphere is not None:
             self.render_sphere(points[-1])
@@ -239,7 +243,7 @@ class Board(HierarchicalNode):
     def render_self(self):
         for child in self.child_nodes:
             child: BoardCell
-            if child.distance_to_center < 10.0:
+            if child.distance_to_center < 8.0:
                 child.render()
 
     def translate_and_adjust_center(self, translation_vec):
@@ -268,7 +272,6 @@ class Board(HierarchicalNode):
         from board_config import map
 
         map = [[int(c) for c in line] for line in map.split("\n")]
-
         width, height = len(map[0]), len(map)
 
         assert width % 2 == 1 and height % 2 == 1
